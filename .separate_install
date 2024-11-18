@@ -1,0 +1,37 @@
+#!/bin/bash
+
+RED_BOLD='\033[0;31m'
+NO='\033[0m'
+
+# Check arguments for other features 
+while getopts ":d:u:" option;
+do
+    case  "${option}" in
+        d) ROS_DISTRO=${OPTARG} ;;
+        u) USER=${OPTARG} ;;
+    esac
+done
+
+# install pkg or setup setting depends on distro
+case $ROS_DISTRO in
+    noetic)
+        # catkin tool
+        sudo apt install python3-catkin-tools -y
+
+        # numpy
+        sudo pip install numpy==1.24.4
+
+        ;;
+
+    humble)
+        pip install setuptools==58.2.0
+        sudo apt install ros-$ROS_DISTRO-rmw-cyclonedds-cpp -y
+        
+        # numpy
+        sudo pip install numpy==1.25.2
+
+        echo "source /usr/share/gazebo-11/setup.sh" >> /home/$USER/.bashrc
+        ;;
+    ?)
+        printf "${RED_BOLD}There is no ROS distribution called ${BLUE}$ROS_DISTRO\n${NO}"
+esac

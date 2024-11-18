@@ -1,0 +1,7 @@
+
+# source ros pkg under the home
+ros_setup=$(find ~ -maxdepth 3 -name setup.bash)
+if [ -n "$ros_setup" ]; then
+    source $ros_setup
+fi
+

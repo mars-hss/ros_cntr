@@ -1,0 +1,85 @@
+# Argument for ROS
+ARG version
+ARG bundles
+
+# ROS image
+FROM osrf/ros:$version-$bundles
+
+# nvidia-container-runtime
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES \
+    ${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics
+
+# Argument for user
+ARG USER
+ARG uid
+# User part
+ADD ./.create_user /home/
+RUN sudo bash /home/.create_user $USER $uid
+RUN rm -f /home/.create_user
+
+# update and basic pkgs
+RUN sudo apt update
+RUN sudo apt install apt-utils debconf-utils -y
+RUN sudo apt install mesa-utils -y
+RUN sudo apt install vim -y
+RUN sudo apt install wget ca-certificates lsb-release gnupg2 curl -y
+RUN sudo apt install software-properties-common -y
+RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install xserver-xorg-video-intel -y
+RUN sudo apt install git -y
+RUN sudo apt install net-tools -y
+RUN sudo apt install iputils-ping -y
+
+
+############### You can change this part #######################
+# Additional ROS packages
+RUN sudo apt install -y \
+              ros-$ROS_DISTRO-gazebo-* \
+              ros-$ROS_DISTRO-velocity-controllers \
+              ros-$ROS_DISTRO-effort-controllers \
+              ros-$ROS_DISTRO-joint-* \
+              ros-$ROS_DISTRO-tf* \
+              ros-$ROS_DISTRO-rosbridge-* \
+              ros-$ROS_DISTRO-xacro* \
+              ros-$ROS_DISTRO-hardware* \
+              ros-$ROS_DISTRO-con* \
+              ros-$ROS_DISTRO-cv* \
+              ros-$ROS_DISTRO-rviz* 
+
+# Python package for ROS
+RUN sudo apt install protobuf-compiler protobuf-c-compiler -y
+RUN sudo apt install python3-opencv -y
+RUN sudo apt install python3-pip -y
+RUN sudo apt-get install libgmp-dev python3-dev -y
+
+################################################################
+
+# Dependencies
+RUN sudo apt install libboost-all-dev -y
+RUN sudo apt install libyaml-cpp* -y
+RUN sudo apt install libeigen3-dev -y
+RUN sudo apt upgrade libomp-dev -y
+RUN sudo apt install doctest* -y
+RUN sudo apt install gdb -y
+RUN sudo apt install clang-format -y
+
+###############################################################
+
+# copy files
+ADD ./.ps.txt /home/$USER/
+ADD ./.ros_source.txt /home/$USER/
+ADD ./.separate_install /home/$USER/
+
+# source ros and your workspace
+RUN echo "source /opt/ros/$version/setup.bash" >> /home/$USER/.bashrc
+RUN cat /home/$USER/.ps.txt >> /home/$USER/.bashrc
+RUN cat /home/$USER/.ros_source.txt >> /home/$USER/.bashrc
+
+# install by different ROS distribution
+RUN sudo bash /home/$USER/.separate_install -d $version -u $USER
+RUN sudo rm -rf /home/$USER/.ros_source.txt /home/$USER/.ps.txt /home/$USER/.separate_install
+
+USER $USER
+# upgrade all package for the last time
+RUN sudo apt update && sudo apt upgrade -y
