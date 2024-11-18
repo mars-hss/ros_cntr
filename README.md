@@ -23,6 +23,10 @@ cd path-to-clone/ros_docker/
 bash ./install.sh
 ```
 
+### Find out more details [Wiki](https://github.com/mars-hss/ros_docker/wiki)
+
+<br/>
+
 ## File structure
 ```
 ROS(Or your specific)
