@@ -182,17 +182,17 @@ select_running_dockers(){
     size=${#docker_name[@]}
 
     if [ $size -gt 1 ]; then
-        echo -e "${GRAY}-------------------------------------------------------------------------${NO}"
+        echo -e "${GRAY}---------------------------------------------------------------------${NO}"
         for ((i=0;i<$size;i++))
         do
-            printf "  ${WHITE}$(($i+1))${NO}.${docker_name[i]} ${GRAY}|${NO}"
-            if [ $(($i%3)) == 2 ] && [ $i != $(($ws_num-1)) ]; then
+            printf "  ${WHITE}$(($i+1))${NO}.${docker_name[$(($size-1-i))]} ${GRAY}|${NO}"
+            if [ $(($i%2)) == 1 ] && [ $i != $(($size-1)) ]; then
                 printf "\n"
-                echo -e "${GRAY}-------------------------------------------------------------------------${NO}"
+                echo -e "${GRAY}---------------------------------------------------------------------${NO}"
             fi
         done
         printf "\n"
-        echo -e "${GRAY}-------------------------------------------------------------------------${NO}"
+        echo -e "${GRAY}---------------------------------------------------------------------${NO}"
         printf "\nSelect Docker name : "
         read name
 
@@ -200,6 +200,8 @@ select_running_dockers(){
         index=$?
 
         selected_D_name=${docker_name[$index]}
+    else
+        selected_D_name=$docker_name
     fi
 }
 
@@ -379,16 +381,33 @@ docker_run(){
 find_workspace(){
 # find workspace from namep of ros version folder
 # tag is ws_name_tag / Default is _ws
-    if $multi_distro || $multi_ws; then
+    if $multi_distro; then
         docker_on=
     else
         docker_on=$(docker ps -q -f name=Docker_$ROS_DISTRO-*)
     fi
 
     if [ -n "$docker_on" ]; then
-        sleep 0.75;
-        clear;
-        docker_exec Docker_$ROS_DISTRO-*
+        if $multi_ws; then
+            docker_on_ws=($(docker ps -f name=Docker_$ROS_DISTRO-* --format '{{.Names}}'))
+            num_ws_names=${#docker_on_ws[@]}
+
+            if [ -n "$docker_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
+                count_ws=$(( $count_ws + "$(echo ${docker_on_ws[0]} | cut -d'_' -f 3)" ))
+            fi
+
+            ws_name=$(echo "$(echo ${docker_on_ws[0]} | cut -d'_' -f 2)" | cut -d'-' -f 2)
+            distro_ws=$(echo ${docker_on_ws[0]} | cut -d'_' -f 2)
+            ros_ws=$(find $start_dir/$ROS_DISTRO/ -maxdepth 1 -type d -name "$ws_name""$ws_name_tag")
+
+            docker_name="Docker_$distro_ws"_"$count_ws"
+            docker_short_name="D_$distro_ws"_"$count_ws"
+            docker_run
+        else
+            sleep 0.75;
+            clear;
+            docker_exec Docker_$ROS_DISTRO-*
+        fi
     else
         if $ws_selected; then
             ros_ws=$(find $start_dir/$ROS_DISTRO/ -maxdepth 1 -type d -name "$ws_name""$ws_name_tag")
@@ -488,18 +507,28 @@ open_config(){
         gedit $start_dir/.config
         clear;
         exit
-    else
-        cmd_xed=$(command -v xed)
-        if [ -n "$cmd_xed" ];then
-            xed $start_dir/.config
-            clear;
-            exit
-        else
-            vi $start_dir/.config
-            printf "${RED_BOLD}There are no editor like 'gedit', 'xed'.${NO}\n"
-            exit
-        fi
     fi
+    cmd_xed=$(command -v xed)
+    if [ -n "$cmd_xed" ];then
+        xed $start_dir/.config
+        clear;
+        exit
+    fi
+    cmd_gonme_editor=$(command -v gnome-text-editor)
+    if [ -n "$cmd_gonme_editor" ];then
+        gnome-text-editor $start_dir/.config
+        clear;
+        exit
+    fi
+    cmd_editor=$(command -v editor)
+    if [ -n "$cmd_editor" ];then
+        editor $start_dir/.config
+        clear;
+        exit
+    fi
+    vi $start_dir/.config
+    printf "${RED_BOLD}There are no editor like 'gedit', 'editor', 'gnome-text-editor', or 'xed'.${NO}\n"
+    exit        
 }
 
 docker_images(){
