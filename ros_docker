@@ -97,7 +97,7 @@ docker_build(){
 # Build docker images
 # Arguments
 # $1: tag name
-    if [ -n "$1" ] && [ "$1" != "y" ];then
+    if [ -n "$1" ] && [ "$1" != "-y" ];then
         local tag=$1
         case $tag in 
             *) 
@@ -129,7 +129,7 @@ docker_build(){
     echo "**                                    "
     printf "********************************************\n\n"
 
-    if [ "$1" != "-y" ];then
+    if [ "$1" == "-y" ];then
         build_yn="y"
     else
         printf "Check dockerfile from vscode\n\n"
@@ -694,7 +694,11 @@ if [ -n "$1" ]; then
             d) ROS_DISTRO=${OPTARG} ;;
             u) usb_dev=${OPTARG}
                usb=true ;;
-            b) docker_build $@ ;;
+            b) if [ -n "$4" ];then
+                 docker_build $4
+               else
+                 docker_build $2
+               fi ;;
             t) docker_exec ;;
             k) docker_kill ;;
             r) docker_ps ;;
