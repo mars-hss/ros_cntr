@@ -634,7 +634,7 @@ version(){
 
     for ((i=0;i<$ros_image_num;i++))
     do
-        printf "\t\t |-${CYAN}${docker_imgs[(((($i*7))+6))]}${NO}\n"
+        printf "\t\t |-${CYAN}${docker_imgs[$i]}${NO}\n"
     done
     printf "\n"
     exit
