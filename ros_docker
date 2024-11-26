@@ -97,7 +97,7 @@ docker_build(){
 # Build docker images
 # Arguments
 # $1: tag name
-    if [ -n "$1" ] && [ "$1" != "y"];then
+    if [ -n "$1" ] && [ "$1" != "y" ];then
         local tag=$1
         case $tag in 
             *) 
