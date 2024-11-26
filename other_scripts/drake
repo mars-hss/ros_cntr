@@ -1,0 +1,24 @@
+#!/bin/bash
+
+USER=$(id -u -n)
+
+# Drake
+wget -qO- https://drake-apt.csail.mit.edu/drake.asc | gpg --dearmor - \
+| sudo tee /etc/apt/trusted.gpg.d/drake.gpg >/dev/null
+echo "deb [arch=amd64] https://drake-apt.csail.mit.edu/$(lsb_release -cs) $(lsb_release -cs) main" \
+| sudo tee /etc/apt/sources.list.d/drake.list >/dev/null
+sudo apt update
+
+# drake install
+sudo apt install --no-install-recommends drake-dev -y
+
+drake=$(grep drake /home/$USER/.bashrc)
+if [ "$drake" -z ];then
+    # path for Drake
+    sudo echo "# Drake python path" >> /home/$USER/.bashrc
+    py_version=$(python3 -c 'import sys; print("{0}.{1}".format(*sys.version_info))')
+    sudo echo "export PATH=$PATH:/opt/drake/bin" >> /home/$USER/.bashrc
+    sudo echo "export PYTHONPATH=$PYTHONPATH:/opt/drake/lib/python$py_version/site-packages" \
+    >> /home/$USER/.bashrc
+    sudo echo "" >> /home/$USER/.bashrc
+fi

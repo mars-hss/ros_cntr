@@ -1,0 +1,16 @@
+#!/bin/bash
+
+wget -qO- https://cyberbotics.com/Cyberbotics.asc | gpg --dearmor | sudo tee /usr/share/keyrings/webots-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/webots-archive-keyring.gpg] https://cyberbotics.com/debian/ binary-amd64/" | sudo tee /etc/apt/sources.list.d/webots.list > /dev/null
+sudo apt update
+sudo apt install webots -y
+
+if [ -n "$1" ];then
+    # type ros version for ros package ex)bash webots humble
+    $ROS_DISTRO=$1
+    sudo apt install ros-$ROS_DISTRO-webots-* -y
+fi
+
+if [ -n "$ROS_DISTRO" ];then
+    sudo apt install ros-$ROS_DISTRO-webots-* -y
+fi

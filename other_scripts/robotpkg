@@ -1,0 +1,96 @@
+#!/bin/bash
+
+# options for install pkg.
+show_option(){
+    printf "\nadditional_installer -i PKG_NAME\n"
+    printf "Install a sepecific package with configuration\n\n"
+    printf "PKG_NAME: \n"
+    printf "\tpinocchio \n"
+    printf "\tcrocoddyl \n"
+    printf "\ttsid \n"
+    exit
+}
+
+robotpkg(){
+    # robotpkg
+    echo "deb [arch=amd64] http://robotpkg.openrobots.org/packages/debian/pub $(lsb_release -cs) robotpkg" | sudo tee /etc/apt/sources.list.d/robotpkg.list
+    curl http://robotpkg.openrobots.org/packages/debian/robotpkg.key | sudo apt-key add -
+
+    sudo apt update
+}
+pinocchio(){
+    # pinocchio (Legged robot)
+    sudo apt install -qqy robotpkg-py3*-pinocchio
+    sudo apt install robotpkg-py3*-eigenpy -y
+    pip install pinocchio
+}
+tsid(){
+    sudo apt install robotpkg-py3*-tsid -y
+}
+
+gepetto(){
+    sudo apt install robotpkg-py3\*-qt5-gepetto-viewer-corba -y
+    pip install meshcat
+}
+crocoddyl(){
+    sudo apt install robotpkg-py3\*-crocoddyl -y
+    gepetto
+}
+
+after_install(){
+    openrobots=$(grep openrobots /home/$USER/.bashrc)
+    if [ -z "$openrobots" ];then
+        source /opt/ros/$ROS_DISTRO/setup.bash
+        bashrc=/home/$USER/.bashrc
+
+        ((i=1))
+        while read -r LINE
+        do
+            if [[ "$LINE" == *"source ros pkg under the home"* ]]; then
+                echo $LINE
+                line_num=$i
+            fi
+            i=$(($i+1))
+        done < $bashrc
+
+        py_version=$(python3 -c 'import sys; print("{0}.{1}".format(*sys.version_info))')
+
+        sed -i "$line_num i\export PYTHONPATH=$PYTHONPATH:/opt/openrobots/lib/python$py_version/site-packages" $bashrc
+        sed -i "$line_num i\export PATH=$PATH:/opt/openrobots/bin" $bashrc
+        sed -i "$line_num i\export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/openrobots" $bashrc
+        sed -i "$line_num i\export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/openrobots/lib" $bashrc
+        sed -i "$line_num i\export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/openrobots/lib/pkgconfig" $bashrc
+        sed -i "$line_num i\# OpenRobot setting path" $bashrc
+
+        clear;
+        echo "Installation is finished"
+        printf "Please type under command :"
+        printf "\tsource ~/.bashrc\n"
+    fi
+}
+
+# Check arguments for other features 
+while getopts ":i:h" option;
+do
+    case  "${option}" in
+        i) install_en=true
+           install_name=${OPTARG} ;;
+        h) show_option ;;
+    esac
+done
+
+USER=$(id -u -n)
+case $install_name in
+    pinocchio) robotpkg
+               pinocchio
+               after_install ;;
+    crocoddyl) robotpkg
+               crocoddyl
+               gepetto
+               after_install ;;
+    tsid) robotpkg 
+          tsid
+          after_install ;;
+    ?) printf "${RED_BOLD}There is no name for installing pkgs ${BLUE}$ROS_DISTRO\n${NO}"
+        ;;
+esac

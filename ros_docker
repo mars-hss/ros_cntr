@@ -97,7 +97,7 @@ docker_build(){
 # Build docker images
 # Arguments
 # $1: tag name
-    if [ -n "$1" ];then
+    if [ -n "$1" ] && [ "$1" != "y"];then
         local tag=$1
         case $tag in 
             *) 
@@ -106,7 +106,7 @@ docker_build(){
               local dockerfile=$(find $build_dir/$tag -maxdepth 1 -type f -name dockerfile)
             ;;
         esac
-        if [ "$tag_folder" -z ];then
+        if [ -z "$tag_folder" ];then
             printf "${RED_BOLD}This is not supported${NO} TAG : $1\n"
             exit
         fi
@@ -128,11 +128,17 @@ docker_build(){
     echo -e "**    USER       : ${BLUE}$USER${NO}"
     echo "**                                    "
     printf "********************************************\n\n"
-    printf "Check dockerfile from vscode\n\n"
-    sleep 1.5;
-    code $dokerfile
-    printf "${BOLD}Do you want to build? (y/n): ${NO}"
-    read build_yn
+
+    if [ "$1" != "-y" ];then
+        build_yn="y"
+    else
+        printf "Check dockerfile from vscode\n\n"
+        sleep 1.5;
+        code $dockerfile
+        printf "${BOLD}Do you want to build? (y/n): ${NO}"
+        read build_yn
+    fi
+
     if [ "$build_yn" == "y" ]; then
         docker_build_version $tag
         docker build -t $full_tag \
@@ -636,7 +642,17 @@ version(){
 
 script_option(){
 # script options for without -*
-    if [[ "$1" != "-"* ]] && [[ -n "$2" ]] && [[ "$1" != "code" ]];then
+    opt_arr=( "code" "build" )
+    opt_num=${#opt_arr[@]}
+    opt_on=true
+    for ((i=0;i<$opt_num;i++))
+    do
+        if [ "$1" != "${opt_arr[$i]}" ];then
+            opt_on=false
+        fi
+    done
+
+    if [[ "$1" != "-"* ]] && [[ -n "$2" ]] && $opt_on;then
         printf "${RED_BOLD}These multiple options are not supported${NO}\n"
         exit
     else
@@ -678,7 +694,7 @@ if [ -n "$1" ]; then
             d) ROS_DISTRO=${OPTARG} ;;
             u) usb_dev=${OPTARG}
                usb=true ;;
-            b) docker_build ;;
+            b) docker_build $@ ;;
             t) docker_exec ;;
             k) docker_kill ;;
             r) docker_ps ;;
