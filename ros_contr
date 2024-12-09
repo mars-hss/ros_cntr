@@ -1,26 +1,27 @@
 #!/bin/bash
 # Copyright to Mars 
-########################################
-# This is launch script for ROS docker #
-########################################
+###########################################
+# This is launch script for ROS Container #
+###########################################
 
 ### Variables ###
-current=$(pwd)      # current path
+current=$(pwd)        # current path
 start_dir=$(find ~ -maxdepth 1 -type d -name ROS) # ROS folder
-port=false          # port number to docker (ex. unity)
-usb=false           # usb port to docker
-ROS_DISTRO=""       # Default ros version
-bundles=""          # Package bundles
-USER=$(id -u -n)    # username for docker and linux
-uid=$(id -u)        # user id
-ws_selected=false   # Workspace
-ws_name_tag="_ws"   # _ws for workspace
-docker_name=""      # docker name
+port=false            # port number to container (ex. unity)
+usb=false             # usb port to container
+ROS_DISTRO=""         # Default ros version
+bundles=""            # Package bundles
+USER=$(id -u -n)      # username for container and linux
+uid=$(id -u)          # user id
+ws_selected=false     # Workspace
+ws_name_tag="_ws"     # _ws for workspace
+contr_name=""         # container name
 default_gpu="nvidia"
-gpu=""              # true : nvidia/intel/amd
-build_version=""    # docker build arg
-multi_distro=false  # multi-dockers for same ros version.
-multi_ws=false      # multi-dockers for same ros and workspace.
+gpu=""                # true : nvidia/intel/amd
+build_version=""      # container build arg
+multi_distro=false    # multi-containers for same ros version.
+multi_ws=false        # multi-containers for same ros and workspace.
+contr_manager=
 
 
 ### Color for scirpt ###
@@ -62,15 +63,15 @@ esac
 
 
 show_option(){
-    printf "\n${LINE}${GREEN_BOLD}ros_docker${NO} ${BOLD}[OPTION]${NO} ${PURPLE}COMMAND${NO}\n\n"
+    printf "\n${LINE}${GREEN_BOLD}ros_contr${NO} ${BOLD}[OPTION]${NO} ${PURPLE}COMMAND${NO}\n\n"
     printf "${BOLD}Options${NO}:\n"
-    printf "  ${BOLD}-b OR build${NO}             Change dockerfile and build the docker\n"
-    printf "  ${BOLD}-c OR config${NO}            Open configuration file for 'ros_docker'\n"
-    printf "  ${BOLD}-k OR kill${NO}              Kill running ros_docker\n"
-    printf "  ${BOLD}-r OR ps${NO}                Running dockers from this script\n"
-    printf "  ${BOLD}-t OR cmd OR cli${NO}        Addition terminal for docker\n"
-    printf "  ${BOLD}-v OR version${NO}           Show version and possible docker images\n"
-    printf "  ${BOLD}code${NO}                    Open vscode in a container from ros_docker\n"
+    printf "  ${BOLD}-b OR build${NO}             Change dockerfile and build the container\n"
+    printf "  ${BOLD}-c OR config${NO}            Open configuration file for 'ros_contr'\n"
+    printf "  ${BOLD}-k OR kill${NO}              Kill running ros_contr\n"
+    printf "  ${BOLD}-r OR ps${NO}                Running containers from this script\n"
+    printf "  ${BOLD}-t OR cmd OR cli${NO}        Addition terminal for containers\n"
+    printf "  ${BOLD}-v OR version${NO}           Show version and possible container images\n"
+    printf "  ${BOLD}code${NO}                    Open vscode in a container from ros_contr\n"
     printf "  ${BOLD}-d${NO} ${PURPLE}ROS_DISTRO${NO}           ROS version like noetic, humble\n"
     printf "  ${BOLD}-u${NO} ${PURPLE}USB_device${NO}           Add usb device to docker(Only first time)\n"
     printf "  ${BOLD}-w${NO} ${PURPLE}NAME${NO}                 ROS workspace without _ws like ex (ex_ws)\n\n"
@@ -84,7 +85,7 @@ show_option(){
     exit
 }
 
-docker_build_version(){
+contr_build_version(){
 # set variables for building images
     if [ -n "$1" ]; then
         case "$1" in
@@ -93,7 +94,7 @@ docker_build_version(){
     fi
 }
 
-docker_build(){
+contr_build(){
 # Build docker images
 # Arguments
 # $1: tag name
@@ -123,7 +124,7 @@ docker_build(){
     fi
     echo "********************************************"
     echo "**                                    "
-    echo "**    Docker image will be built      "
+    echo "**    Container image will be built      "
     echo -e "**    TAG name   : ${BLUE}$tag${NO}"
     echo -e "**    USER       : ${BLUE}$USER${NO}"
     echo "**                                    "
@@ -140,14 +141,14 @@ docker_build(){
     fi
 
     if [ "$build_yn" == "y" ]; then
-        docker_build_version $tag
-        docker build -t $full_tag \
+        contr_build_version $tag
+        $contr_manager build -t $full_tag \
          --build-arg version=$build_version \
          --build-arg bundles=$bundles \
          --build-arg USER=$USER \
          --build-arg uid=$uid \
          -f $dockerfile $build_dir/
-        docker image prune -f
+        $contr_manager image prune -f
         printf "\n${BLUE_LINE}Relaunch this script for using ROS docker${NO}\n"
     else
         printf "${YELLOW}Didn't build docker${NO}"
@@ -183,15 +184,15 @@ select_running_dockers(){
 # Arguments
 # $1: selected number
 # $2: total array length
-# Set select_D_name (docker_name)
-    docker_find_name
-    size=${#docker_name[@]}
+# Set select_C_name (contr_name)
+    contr_find_name
+    size=${#contr_name[@]}
 
     if [ $size -gt 1 ]; then
         echo -e "${GRAY}---------------------------------------------------------------------${NO}"
         for ((i=0;i<$size;i++))
         do
-            printf "  ${WHITE}$(($i+1))${NO}.${docker_name[$(($size-1-i))]} ${GRAY}|${NO}"
+            printf "  ${WHITE}$(($i+1))${NO}.${contr_name[$(($size-1-i))]} ${GRAY}|${NO}"
             if [ $(($i%2)) == 1 ] && [ $i != $(($size-1)) ]; then
                 printf "\n"
                 echo -e "${GRAY}---------------------------------------------------------------------${NO}"
@@ -199,108 +200,108 @@ select_running_dockers(){
         done
         printf "\n"
         echo -e "${GRAY}---------------------------------------------------------------------${NO}"
-        printf "\nSelect Docker name : "
+        printf "\nSelect Container name : "
         read name
 
         check_type_num $name $size
         index=$?
 
-        selected_D_name=${docker_name[$index]}
+        selected_C_name=${contr_name[$index]}
     else
-        selected_D_name=$docker_name
+        selected_C_name=$contr_name
     fi
 }
 
-docker_exec(){
+contr_exec(){
 # Execute terminal
 # Arguments
 # $1: selected number
 # $2: total array length
     if [ -n "$2" ]; then
-        exec_name=Docker_$2
-        docker_on=$(docker ps -q -f name=$exec_name)
-        if [ -z "$docker_on" ]; then
-            exec_name=Docker_$ROS_DISTRO-$1
+        exec_name=Contr_$2
+        contr_on=$($contr_manager ps -q -f name=$exec_name)
+        if [ -z "$contr_on" ]; then
+            exec_name=Contr_$ROS_DISTRO-$1
         fi
     else
         if [ -n "$ws_name" ]; then
-            exec_name=$docker_name
+            exec_name=$contr_name
         else
             select_running_dockers
-            exec_name=$selected_D_name
+            exec_name=$selected_C_name
         fi
     fi
-    docker_on=$(docker ps -q -f name=$exec_name)
-    if [ -n "$docker_on" ]; then
-        docker_find_name $exec_name
+    contr_on=$(docker ps -q -f name=$exec_name)
+    if [ -n "$contr_on" ]; then
+        contr_find_name $exec_name
         clear;
-        docker exec -it $docker_on bash
+        $contr_manager exec -it $contr_on bash
     else
         printf "${RED_BOLD}There is no running docker for ROS\n${NO}"
         exit
     fi
     sleep 0.8;
-    docker_id=$(docker ps -q -f name=$exec_name)
-    if [ -n "$docker_id" ]; then
-        printf "Do you want to kill '${BLUE}$docker_name${NO}'? (y/n): "
+    contr_id=$(docker ps -q -f name=$exec_name)
+    if [ -n "$contr_id" ]; then
+        printf "Do you want to kill '${BLUE}$contr_name${NO}'? (y/n): "
         read build_yn
         if [ "$build_yn" == "y" ]; then
-            docker_kill $docker_name
+            contr_kill $contr_name
         else
-            printf "${YELLOW}Terminate '${BLUE}$docker_name${NO}${YELLOW}' terminal\n${NO}"
+            printf "${YELLOW}Terminate '${BLUE}$contr_name${NO}${YELLOW}' terminal\n${NO}"
             exit
         fi
     else
-        printf "${YELLOW}\nTerminate '${BLUE}$docker_name${NO}${YELLOW}' terminal\n${NO}"
+        printf "${YELLOW}\nTerminate '${BLUE}$contr_name${NO}${YELLOW}' terminal\n${NO}"
         exit
     fi
 }
 
-docker_kill(){
+contr_kill(){
 # Kill all dockers from this script.
     if [ -n "$1" ]; then
-        docker_id=$(docker ps -q -f name=$1)
+        contr_id=$(docker ps -q -f name=$1)
     else
-        docker_id=$(docker ps -q -f name=Docker_*)
-        docker_find_name
+        contr_id=$(docker ps -q -f name=Contr_*)
+        contr_find_name
     fi
-    if [ -n "$docker_id" ]; then
-        end=($(docker kill $docker_id))
-        docker_num=${#docker_name[@]}
+    if [ -n "$contr_id" ]; then
+        end=($(docker kill $contr_id))
+        contr_num=${#contr_name[@]}
 
-        if [ $docker_num -gt 1 ]; then
+        if [ $contr_num -gt 1 ]; then
             echo -e "${YELLOW}Kill the running "
-            for ((i=0;i<$docker_num;i++))
+            for ((i=0;i<$contr_num;i++))
             do
-                echo -e "'${NO}${BLUE}${docker_name[i]}${NO}${YELLOW}' | ID: ${end[i]}"
+                echo -e "'${NO}${BLUE}${contr_name[i]}${NO}${YELLOW}' | ID: ${end[i]}"
             done
         else
-            echo -e "${YELLOW}Kill the running '${NO}${BLUE}$docker_name${NO}${YELLOW}' | ID: $end"
+            echo -e "${YELLOW}Kill the running '${NO}${BLUE}$contr_name${NO}${YELLOW}' | ID: $end"
         fi
     else
-        printf "${RED_BOLD}There is no running Docker.\n${NO}"
+        printf "${RED_BOLD}There is no running Container.\n${NO}"
     fi
     exit
 }
 
-docker_find_name(){
+contr_find_name(){
 # Find docker names from this script.
 # Arguments
-# $1: docker_name=Docker_*
+# $1: contr_name=Contr_*
     if [ -n $1 ];then
-        docker_name=($(docker ps -f name=$1 --format '{{.Names}}'))
+        contr_name=($(docker ps -f name=$1 --format '{{.Names}}'))
     else
-        docker_name=($(docker ps -f name=Docker_* --format '{{.Names}}'))
+        contr_name=($(docker ps -f name=Contr_* --format '{{.Names}}'))
     fi
 }
 
-docker_run(){
+contr_run(){
 # RUN docker image with configuraitons
 # Arguments
-# $1: docker_name=Docker_*
+# $1: contr_name=Contr_*
     if [ -n "$1" ]; then
-        docker_name=Docker_$1
-        docker_short_name=D_$1
+        contr_name=Contr_$1
+        contr_short_name=D_$1
         add_volume="$start_dir/$1/$1$ws_name_tag:/home/$USER/ws"
         work_DIR="/home/$USER/ws"
         run_name=dimg_$1
@@ -314,7 +315,7 @@ docker_run(){
         fi
     fi
     
-    # Docker run argument options
+    # Container run argument options
     case $gpu in
         nvidia)
             gpu_args="--env="QT_X11_NO_MITSHM=1" \
@@ -367,10 +368,10 @@ docker_run(){
     run=$(docker run -id \
                 --rm -u $USER \
                 --privileged \
-                --name=$docker_name \
+                --name=$contr_name \
                 --env="DISPLAY=$DISPLAY" \
                 --env="LIBGL_ALWAYS_INDIRECT=0" \
-                --env="docker_name=$docker_short_name" \
+                --env="contr_name=$contr_short_name" \
                 --volume=$add_volume \
                 --workdir=$work_DIR \
                 $run_arg \
@@ -378,41 +379,41 @@ docker_run(){
                 $run_name)
 
     #code launch
-    code_launch $docker_name
+    code_launch $contr_name
     
     sleep 0.75;
-    docker_exec $docker_name
+    contr_exec $contr_name
 }
 
 find_workspace(){
 # find workspace from namep of ros version folder
 # tag is ws_name_tag / Default is _ws
     if $multi_distro; then
-        docker_on=
+        contr_on=
     else
-        docker_on=$(docker ps -q -f name=Docker_$ROS_DISTRO-*)
+        contr_on=$(docker ps -q -f name=Contr_$ROS_DISTRO-*)
     fi
 
-    if [ -n "$docker_on" ]; then
+    if [ -n "$contr_on" ]; then
         if $multi_ws; then
-            docker_on_ws=($(docker ps -f name=Docker_$ROS_DISTRO-* --format '{{.Names}}'))
-            num_ws_names=${#docker_on_ws[@]}
+            contr_on_ws=($(docker ps -f name=Contr_$ROS_DISTRO-* --format '{{.Names}}'))
+            num_ws_names=${#contr_on_ws[@]}
 
-            if [ -n "$docker_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
-                count_ws=$(( $count_ws + "$(echo ${docker_on_ws[0]} | cut -d'_' -f 3)" ))
+            if [ -n "$contr_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
+                count_ws=$(( $count_ws + "$(echo ${contr_on_ws[0]} | cut -d'_' -f 3)" ))
             fi
 
-            ws_name=$(echo "$(echo ${docker_on_ws[0]} | cut -d'_' -f 2)" | cut -d'-' -f 2)
-            distro_ws=$(echo ${docker_on_ws[0]} | cut -d'_' -f 2)
+            ws_name=$(echo "$(echo ${contr_on_ws[0]} | cut -d'_' -f 2)" | cut -d'-' -f 2)
+            distro_ws=$(echo ${contr_on_ws[0]} | cut -d'_' -f 2)
             ros_ws=$(find $start_dir/$ROS_DISTRO/ -maxdepth 1 -type d -name "$ws_name""$ws_name_tag")
 
-            docker_name="Docker_$distro_ws"_"$count_ws"
-            docker_short_name="D_$distro_ws"_"$count_ws"
-            docker_run
+            contr_name="Contr_$distro_ws"_"$count_ws"
+            contr_short_name="C_$distro_ws"_"$count_ws"
+            contr_run
         else
             sleep 0.75;
             clear;
-            docker_exec Docker_$ROS_DISTRO-*
+            contr_exec Contr_$ROS_DISTRO-*
         fi
     else
         if $ws_selected; then
@@ -421,8 +422,8 @@ find_workspace(){
                 printf "${RED_BOLD}Can't find the workspace called '${NO}${ORANGE}$sws_name${NO}${RED_BOLD}' for ${NO}${BLUE}$ROS_DISTRO\n\n${NO}"
                 exit
             fi
-            docker_name="Docker_$ROS_DISTRO-$ws_name"
-            docker_short_name="D_$ROS_DISTRO-$ws_name"
+            contr_name="Contr_$ROS_DISTRO-$ws_name"
+            contr_short_name="C_$ROS_DISTRO-$ws_name"
         else
             # Show and select which workspace for ROS docker
             if [ -z "$(find $start_dir/$ROS_DISTRO -type d -name *$ws_name_tag)" ]; then
@@ -476,22 +477,22 @@ find_workspace(){
                 exit
             fi
             ws_name=${selected_ws%%_*}
-            docker_name="Docker_$ROS_DISTRO-$ws_name"
-            docker_short_name="D_$ROS_DISTRO-$ws_name"
+            contr_name="Contr_$ROS_DISTRO-$ws_name"
+            contr_short_name="C_$ROS_DISTRO-$ws_name"
             cd $current
         fi
 
         if $multi_ws; then
-            docker_on_ws=($(docker ps -f name=$docker_name* --format '{{.Names}}'))
-            num_ws_names=${#docker_on_ws[@]}
+            contr_on_ws=($(docker ps -f name=$contr_name* --format '{{.Names}}'))
+            num_ws_names=${#contr_on_ws[@]}
 
-            if [ -n "$docker_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
-                count_ws=$(( $count_ws + "$(echo ${docker_on_ws[0]} | cut -d'_' -f 3)" ))
+            if [ -n "$contr_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
+                count_ws=$(( $count_ws + "$(echo ${contr_on_ws[0]} | cut -d'_' -f 3)" ))
             fi
-            docker_name="$docker_name"_"$count_ws"
-            docker_short_name="$docker_short_name"_"$count_ws"
+            contr_name="$contr_name"_"$count_ws"
+            contr_short_name="$contr_short_name"_"$count_ws"
         fi
-        docker_run
+        contr_run
     fi
 }
 
@@ -500,7 +501,7 @@ read_config(){
     config=$(find $start_dir/.config)
 
     if [ -z $config ];then
-        printf "${RED_BOLD}\nCan't find the configuration file for ros_docker${NO}\n"
+        printf "${RED_BOLD}\nCan't find the configuration file for ros_contr${NO}\n"
         exit
     fi
 
@@ -537,35 +538,35 @@ open_config(){
     exit        
 }
 
-docker_images(){
+contr_images(){
 # Find docker images from this script.
-    docker_imgs=($(docker images --filter=reference='dimg_*'))
-    ros_image_num=$(( ((${#docker_imgs[@]}-6))/7 ))
+    contr_imgs=($(docker images --filter=reference='dimg_*'))
+    ros_image_num=$(( ((${#contr_imgs[@]}-6))/7 ))
     for ((i=0;i<$ros_image_num;i++))
     do
-        image_name=${docker_imgs[(((($i*7))+6))]}
+        image_name=${contr_imgs[(((($i*7))+6))]}
         if [[ "$image_name" == *"ros-"* ]]; then
             ex_distro+=($(echo $image_name | cut -d'-' -f 2))
         fi
     done
 }
 
-docker_ps(){
+contr_ps(){
 # Check running container from this script
-    running=($(docker ps -f name=Docker_*))
+    running=($(docker ps -f name=Contr_*))
     ps_num=$(( ((${#running[@]}))-8 ))
 
     if [ "$ps_num" -gt 0 ];then
-        docker ps -f name=Docker_*
+        docker ps -f name=Contr_*
     else
-        echo -e "${RED_BOLD}There are no running dockers from${NO} ${GREEN_BOLD}ros_docker${NO}"
+        echo -e "${RED_BOLD}There are no running dockers from${NO} ${GREEN_BOLD}ros_contr${NO}"
     fi
     exit
 }
 
 check_img(){
 # Check docker images with ros version
-    docker_images
+    contr_images
     distro=$(echo "$(echo $1 | cut -d'_' -f 2)" | cut -d '-' -f 1)
     distro_num=${#ex_distro[@]}
     img_ros=false
@@ -581,28 +582,28 @@ check_img(){
 code_launch(){
 # Launch VSCode from docker container from this script.
 # Arguments
-# $1: docker_name=Docker_*
+# $1: contr_name=Contr_*
 # $2: open path from docker
     en_vscode=$(command -v code)
 
    if [ -n "$en_vscode" ];then
         if [ -n "$1" ];then
-            selected_D_name=$1
+            selected_C_name=$1
         else
-            docker_find_name
-            num_dockers=${#docker_name[@]}
+            contr_find_name
+            num_dockers=${#contr_name[@]}
             if [ "$num_dockers" -gt 1 ];then
                 select_running_dockers
             else
-                selected_D_name=$docker_name
+                selected_C_name=$contr_name
             fi
         fi
 
-        if [ -n "$(docker ps -f name=$selected_D_name)" ];then
+        if [ -n "$(docker ps -f name=$selected_C_name)" ];then
 
-            hex=$(printf \{\"containerName\"\:\"$selected_D_name\"\} | od -A n -t x1 | tr -d '[\n\t ]')
+            hex=$(printf \{\"containerName\"\:\"$selected_C_name\"\} | od -A n -t x1 | tr -d '[\n\t ]')
 
-            check_img $selected_D_name
+            check_img $selected_C_name
 
             # launch vscode from running container
             if [ -n "$ws_name" ] || [ $img_ros ];then
@@ -625,16 +626,16 @@ code_launch(){
 }
 
 version(){
-    docker_images
+    contr_images
     read_config
-    printf "\n${GREEN}ros_docker${NO} ${BOLD}version 1.0${NO}\n"
+    printf "\n${GREEN}ros_contr${NO} ${BOLD}version 1.0${NO}\n"
     printf "Default ROS distribution : '${BLUE}$ROS_DISTRO${NO}'\n"
     printf "Possible image number    : ${BOLD}$ros_image_num${NO}\n"
     printf "Name of images\t-|\n"
 
     for ((i=0;i<$ros_image_num;i++))
     do
-        printf "\t\t |-${CYAN}${docker_imgs[$i]}${NO}\n"
+        printf "\t\t |-${CYAN}${contr_imgs[$i]}${NO}\n"
     done
     printf "\n"
     exit
@@ -660,12 +661,12 @@ script_option(){
             case "$1" in
                 -*) ;;
                 config) open_config ;;
-                cmd | cli) docker_exec ;;
+                cmd | cli) contr_exec ;;
                 code) code_launch
                       exit;;
-                build) docker_build ;;
-                kill) docker_kill ;;
-                ps) docker_ps ;;
+                build) contr_build ;;
+                kill) contr_kill ;;
+                ps) contr_ps ;;
                 help) show_option ;;
                 version) version ;;
                 *) printf "\n${RED_BOLD}Wrong options! Please check below options${NO}\n"
@@ -695,13 +696,13 @@ if [ -n "$1" ]; then
             u) usb_dev=${OPTARG}
                usb=true ;;
             b) if [ -n "$4" ];then
-                 docker_build $4
+                 contr_build $4
                else
-                 docker_build $2
+                 contr_build $2
                fi ;;
-            t) docker_exec ;;
-            k) docker_kill ;;
-            r) docker_ps ;;
+            t) contr_exec ;;
+            k) contr_kill ;;
+            r) contr_ps ;;
             h) show_option ;;
             v) version ;;
             ?) printf "\n${RED_BOLD}Wrong options! Please check below options${NO}\n"
