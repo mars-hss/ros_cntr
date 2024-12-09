@@ -596,7 +596,7 @@ code_launch(){
     en_vscode=$(command -v code)
 
    if [ -n "$en_vscode" ];then
-        if [ "$$contr_manager" == "docker" ];then
+        if [ "$contr_manager" == "docker" ];then
             if [ -n "$1" ];then
                 selected_C_name=$1
             else
