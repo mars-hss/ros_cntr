@@ -133,9 +133,12 @@ contr_build(){
     if [ "$1" == "-y" ];then
         build_yn="y"
     else
-        printf "Check dockerfile from vscode\n\n"
+        printf "Check dockerfile from $dockerfile\n\n"
         sleep 1.5;
-        code $dockerfile
+        en_vscode=$(command -v code)
+        if [ -n "$en_vscode" ];then
+            code $dockerfile
+        fi
         printf "${BOLD}Do you want to build? (y/n): ${NO}"
         read build_yn
     fi
@@ -593,37 +596,39 @@ code_launch(){
     en_vscode=$(command -v code)
 
    if [ -n "$en_vscode" ];then
-        if [ -n "$1" ];then
-            selected_C_name=$1
-        else
-            contr_find_name
-            num_contr=${#contr_name[@]}
-            if [ "$num_contr" -gt 1 ];then
-                select_running_contrs
+        if [ "$$contr_manager" == "docker" ];then
+            if [ -n "$1" ];then
+                selected_C_name=$1
             else
-                selected_C_name=$contr_name
-            fi
-        fi
-
-        if [ -n "$($contr_manager ps -f name=$selected_C_name)" ];then
-
-            hex=$(printf \{\"containerName\"\:\"$selected_C_name\"\} | od -A n -t x1 | tr -d '[\n\t ]')
-
-            check_img $selected_C_name
-
-            # launch vscode from running container
-            if [ -n "$ws_name" ] || [ $img_ros ];then
-                code --folder-uri="vscode-remote://attached-container+${hex}/home/$USER/ros_ws/src"
-            else
-                if [ -n "$2" ];then
-                    code --folder-uri="vscode-remote://attached-container+${hex}/home/$USER/$2"
+                contr_find_name
+                num_contr=${#contr_name[@]}
+                if [ "$num_contr" -gt 1 ];then
+                    select_running_contrs
                 else
-                    code --folder-uri="vscode-remote://attached-container+${hex}/home/$USER/"
+                    selected_C_name=$contr_name
                 fi
             fi
-            clear;
-        else
-            printf "${RED_BOLD}There is no running container for ROS\n${NO}"
+
+            if [ -n "$($contr_manager ps -f name=$selected_C_name)" ];then
+
+                hex=$(printf \{\"containerName\"\:\"$selected_C_name\"\} | od -A n -t x1 | tr -d '[\n\t ]')
+
+                check_img $selected_C_name
+
+                # launch vscode from running container
+                if [ -n "$ws_name" ] || $img_ros; then
+                    code --folder-uri="vscode-remote://attached-container+${hex}/home/$USER/ros_ws/src"
+                else
+                    if [ -n "$2" ];then
+                        code --folder-uri="vscode-remote://attached-container+${hex}/home/$USER/$2"
+                    else
+                        code --folder-uri="vscode-remote://attached-container+${hex}/home/$USER/"
+                    fi
+                fi
+                clear;
+            else
+                printf "${RED_BOLD}There is no running container for ROS\n${NO}"
+            fi
         fi
     else
         printf "${ORANGE}There is no vscode in this OS.\n${NO}"
