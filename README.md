@@ -8,7 +8,7 @@ Bash script for ROS with container
 
 # How it looks like
 ![](media/ros_contr_help.png)
-
+### details of configuration in [Wiki](https://github.com/mars-hss/ros_container/wiki/Configuration)
 <br/>
 
 # Getting Started
