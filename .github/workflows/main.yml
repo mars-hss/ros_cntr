@@ -17,3 +17,5 @@ jobs:
         run: ros_contr build -y
       - name: Make test_ws
         run: mkdir -p /home/$USER/ROS/humble/test_ws/src
+      - name: Run ros_contr
+        run: run_contr -w test
