@@ -10,4 +10,8 @@ jobs:
     steps:
       - name: Test installation
         shell: bash
-        run: bash ${{ github.action_path }}/install.sh
+        uses: actions/checkout@main
+        run: |
+        echo "${{ github.action_path }}"
+        ls
+        bash ./install.sh
