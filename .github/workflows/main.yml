@@ -1,0 +1,14 @@
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  Install_ros-contr:
+    name: Install the ros-contr
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test installation
+        run: |
+        cd ros-container/
+        bash ./install.sh

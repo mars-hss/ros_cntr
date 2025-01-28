@@ -21,15 +21,12 @@ RUN rm -f /home/.create_user
 
 # update and basic pkgs
 RUN sudo apt update
-RUN sudo apt install apt-utils debconf-utils -y
-RUN sudo apt install mesa-utils -y
-RUN sudo apt install vim -y
-RUN sudo apt install wget ca-certificates lsb-release gnupg2 curl -y
-RUN sudo apt install software-properties-common -y
+RUN sudo apt install -y \
+    apt-utils debconf-utils \
+    mesa-utils git vim wget \
+    ca-certificates lsb-release gnupg2 curl \
+    net-tools iputils-ping software-properties-common
 RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install xserver-xorg-video-intel -y
-RUN sudo apt install git -y
-RUN sudo apt install net-tools -y
-RUN sudo apt install iputils-ping -y
 
 
 ############### You can change this part #######################
@@ -41,7 +38,6 @@ RUN sudo apt install -y \
               ros-$ROS_DISTRO-joint-* \
               ros-$ROS_DISTRO-tf* \
               ros-$ROS_DISTRO-rosbridge-* \
-              ros-$ROS_DISTRO-xacro* \
               ros-$ROS_DISTRO-hardware* \
               ros-$ROS_DISTRO-con* \
               ros-$ROS_DISTRO-cv* \

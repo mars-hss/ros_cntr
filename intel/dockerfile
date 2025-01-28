@@ -37,12 +37,10 @@ RUN sudo apt install -y \
               ros-$ROS_DISTRO-joint-* \
               ros-$ROS_DISTRO-tf* \
               ros-$ROS_DISTRO-rosbridge-* \
-              ros-$ROS_DISTRO-xacro* \
               ros-$ROS_DISTRO-hardware* \
               ros-$ROS_DISTRO-con* \
               ros-$ROS_DISTRO-cv* \
-              ros-$ROS_DISTRO-rviz* \
-              ros-$ROS_DISTRO-foxglove*
+              ros-$ROS_DISTRO-rviz*
 
 # Python package for ROS
 RUN sudo apt install protobuf-compiler protobuf-c-compiler -y
@@ -53,6 +51,7 @@ RUN sudo apt install libgmp-dev python3-dev -y
 ################################################################
 
 # Dependencies
+RUN sudo apt install libboost-all-dev -y
 RUN sudo apt install libyaml-cpp* -y
 RUN sudo apt install libeigen3-dev -y
 RUN sudo apt upgrade libomp-dev -y
@@ -66,8 +65,6 @@ RUN sudo apt install clang-format -y
 ADD ./.ps.txt /home/$USER/
 ADD ./.ros_source.txt /home/$USER/
 ADD ./.separate_install /home/$USER/
-ADD ./.additional_installer /usr/local/bin/
-RUN mv /usr/local/bin/.additional_installer /usr/local/bin/additional_installer
 
 # source ros and your workspace
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /home/$USER/.bashrc
@@ -77,7 +74,6 @@ RUN cat /home/$USER/.ros_source.txt >> /home/$USER/.bashrc
 # install by different ROS distribution
 RUN sudo bash /home/$USER/.separate_install -d $ROS_DISTRO -u $USER
 RUN sudo rm -rf /home/$USER/.ros_source.txt /home/$USER/.ps.txt /home/$USER/.separate_install
-RUN sudo chmod +x /usr/local/bin/additional_installer
 
 USER $USER
 # upgrade all package for the last time
