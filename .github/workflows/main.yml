@@ -11,7 +11,4 @@ jobs:
       - name: Test installation
         shell: bash
         uses: actions/checkout@main
-        run: |
-        echo "${{ github.action_path }}"
-        ls
-        bash ./install.sh
+        run: bash ./install.sh
