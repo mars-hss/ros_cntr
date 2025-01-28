@@ -1,4 +1,4 @@
-
+name: Test ros-contr
 on:
   push:
     branches: [ main ]
@@ -10,5 +10,6 @@ jobs:
     steps:
       - name: Test installation
         run: |
+        pwd
         cd ros-container/
         bash ./install.sh
