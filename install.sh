@@ -19,9 +19,16 @@ else
     mkdir -p /home/$USER/$folder_name/humble
 
     chmod +x $pwd/ros_contr
-    mkdir -p /home/$USER/.local/bin/
-    sudo mv $pwd/ros_contr /home/$USER/.local/bin/
-    sudo ln -s /home/$USER/.local/bin/ros_contr /usr/local/bin/
+
+    if [ -n "$1" ] && [ "$1" == "test" ];then
+      mkdir -p /home/$USER/$folder_name/humble/test_ws/src
+      sudo mv $pwd/ros_contr /usr/local/bin/
+    else
+      mkdir -p /home/$USER/.local/bin/
+      sudo mv $pwd/ros_contr /home/$USER/.local/bin/
+      sudo ln -s /home/$USER/.local/bin/ros_contr /usr/local/bin/
+    fi
+    
     mv $pwd/* /home/$USER/$folder_name/
     mv $pwd/.*[a-z] /home/$USER/$folder_name/
 
@@ -29,10 +36,6 @@ else
     sudo echo "# ros_container source file">> /home/$USER/.bashrc
     sudo echo "source /home/$USER/$folder_name/.setup_roscontr.bash">> /home/$USER/.bashrc
     sudo echo "">> /home/$USER/.bashrc
-
-    if [ -n "$1" ] && [ "$1" == "test" ];then
-      mkdir -p /home/$USER/$folder_name/humble/test_ws/src
-    fi
 
     echo -e "${BOLD_LINE}Installation completed!${NO}"
     ros_contr help
