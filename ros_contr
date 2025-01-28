@@ -519,31 +519,36 @@ read_config(){
 
 open_config(){
     cmd_gedit=$(command -v gedit)
-    if [ -n "$cmd_gedit" ]; then
-        gedit $start_dir/.config
-        clear;
-        exit
+
+    if [ -n $2 ] && [ "$1" == "show" ]; then
+        cat $start_dir/.config
+    else
+        if [ -n "$cmd_gedit" ]; then
+            gedit $start_dir/.config
+            clear;
+            exit
+        fi
+        cmd_xed=$(command -v xed)
+        if [ -n "$cmd_xed" ]; then
+            xed $start_dir/.config
+            clear;
+            exit
+        fi
+        cmd_gonme_editor=$(command -v gnome-text-editor)
+        if [ -n "$cmd_gonme_editor" ]; then
+            gnome-text-editor $start_dir/.config
+            clear;
+            exit
+        fi
+        cmd_editor=$(command -v editor)
+        if [ -n "$cmd_editor" ]; then
+            editor $start_dir/.config
+            clear;
+            exit
+        fi
+        vi $start_dir/.config
+        printf "${RED_BOLD}There are no editor like 'gedit', 'editor', 'gnome-text-editor', or 'xed'.${NO}\n"
     fi
-    cmd_xed=$(command -v xed)
-    if [ -n "$cmd_xed" ]; then
-        xed $start_dir/.config
-        clear;
-        exit
-    fi
-    cmd_gonme_editor=$(command -v gnome-text-editor)
-    if [ -n "$cmd_gonme_editor" ]; then
-        gnome-text-editor $start_dir/.config
-        clear;
-        exit
-    fi
-    cmd_editor=$(command -v editor)
-    if [ -n "$cmd_editor" ]; then
-        editor $start_dir/.config
-        clear;
-        exit
-    fi
-    vi $start_dir/.config
-    printf "${RED_BOLD}There are no editor like 'gedit', 'editor', 'gnome-text-editor', or 'xed'.${NO}\n"
     exit        
 }
 
@@ -671,7 +676,7 @@ script_option(){
         if [ -n "$1" ]; then
             case "$1" in
                 -*) ;;
-                config) open_config ;;
+                config) open_config $2 ;;
                 cmd | cli) contr_exec ;;
                 code) code_launch
                       exit;;
@@ -700,7 +705,7 @@ if [ -n "$1" ]; then
     while getopts ":w:d:u:cbtkhv" option;
     do
         case  "${option}" in
-            c) open_config ;;
+            c) open_config $2 ;;
             w) ws_selected=true
                ws_name=${OPTARG} ;;
             d) ROS_DISTRO=${OPTARG} ;;
