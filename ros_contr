@@ -100,8 +100,8 @@ contr_build(){
 # $1: tag name
     if [ -n "$1" ] && [ "$1" != "-y" ];then
         local tag=$1
-        case $tag in 
-            *) 
+        case $tag in
+            *)
               local tag_folder=$(find $start_dir -maxdepth 1 -type d -name $tag)
               local build_dir=$start_dir
               local dockerfile=$(find $build_dir/$tag -maxdepth 1 -type f -name dockerfile)
@@ -291,7 +291,7 @@ contr_find_name(){
 # Find container names from this script.
 # Arguments
 # $1: contr_name=Contr_*
-    if [ -n $1 ];then
+    if [ -n $1 ]; then
         contr_name=($($contr_manager ps -f name=$1 --format '{{.Names}}'))
     else
         contr_name=($($contr_manager ps -f name=Contr_* --format '{{.Names}}'))
@@ -475,7 +475,7 @@ find_workspace(){
             fi
             ros_ws=$(find ~/ROS/$ROS_DISTRO -maxdepth 1 -type d -name $selected_ws)
 
-            if [ -z "$ros_ws" ];then
+            if [ -z "$ros_ws" ]; then
                 printf "\n${RED_BOLD}Can't find the workspace called '${NO}${ORANGE}$selected_ws${NO}${RED_BOLD}' for${NO} ${BLUE}$ROS_DISTRO\n${NO}"
                 exit
             fi
@@ -503,7 +503,7 @@ read_config(){
 # Read config file from ROS folder from Home
     config=$(find $start_dir/.config)
 
-    if [ -z $config ];then
+    if [ -z $config ]; then
         printf "${RED_BOLD}\nCan't find the configuration file for ros_contr${NO}\n"
         exit
     fi
@@ -511,7 +511,7 @@ read_config(){
     source $start_dir/.config
 
     check_manager=$(command -v $contr_manager)
-    if [ -z "$check_manager" ];then
+    if [ -z "$check_manager" ]; then
         printf "${YELLOW}There is no container manager.${NO}\n"
         printf "${RED_BOLD}Please install docker or podman.${NO}\n"
     fi
@@ -519,25 +519,25 @@ read_config(){
 
 open_config(){
     cmd_gedit=$(command -v gedit)
-    if [ -n "$cmd_gedit" ];then
+    if [ -n "$cmd_gedit" ]; then
         gedit $start_dir/.config
         clear;
         exit
     fi
     cmd_xed=$(command -v xed)
-    if [ -n "$cmd_xed" ];then
+    if [ -n "$cmd_xed" ]; then
         xed $start_dir/.config
         clear;
         exit
     fi
     cmd_gonme_editor=$(command -v gnome-text-editor)
-    if [ -n "$cmd_gonme_editor" ];then
+    if [ -n "$cmd_gonme_editor" ]; then
         gnome-text-editor $start_dir/.config
         clear;
         exit
     fi
     cmd_editor=$(command -v editor)
-    if [ -n "$cmd_editor" ];then
+    if [ -n "$cmd_editor" ]; then
         editor $start_dir/.config
         clear;
         exit
@@ -565,7 +565,7 @@ contr_ps(){
     running=($($contr_manager ps -f name=Contr_*))
     ps_num=$(( ((${#running[@]}))-8 ))
 
-    if [ "$ps_num" -gt 0 ];then
+    if [ "$ps_num" -gt 0 ]; then
         $contr_manager ps -f name=Contr_*
     else
         echo -e "${RED_BOLD}There are no running containers from${NO} ${GREEN_BOLD}ros_contr${NO}"
@@ -595,21 +595,21 @@ code_launch(){
 # $2: open path from the container
     en_vscode=$(command -v code)
 
-   if [ -n "$en_vscode" ];then
-        if [ "$contr_manager" == "docker" ];then
-            if [ -n "$1" ];then
+   if [ -n "$en_vscode" ]; then
+        if [ "$contr_manager" == "docker" ]; then
+            if [ -n "$1" ]; then
                 selected_C_name=$1
             else
                 contr_find_name
                 num_contr=${#contr_name[@]}
-                if [ "$num_contr" -gt 1 ];then
+                if [ "$num_contr" -gt 1 ]; then
                     select_running_contrs
                 else
                     selected_C_name=$contr_name
                 fi
             fi
 
-            if [ -n "$($contr_manager ps -f name=$selected_C_name)" ];then
+            if [ -n "$($contr_manager ps -f name=$selected_C_name)" ]; then
 
                 hex=$(printf \{\"containerName\"\:\"$selected_C_name\"\} | od -A n -t x1 | tr -d '[\n\t ]')
 
@@ -659,23 +659,23 @@ script_option(){
     opt_on=true
     for ((i=0;i<$opt_num;i++))
     do
-        if [ "$1" != "${opt_arr[$i]}" ];then
+        if [ "$1" != "${opt_arr[$i]}" ]; then
             opt_on=false
         fi
     done
 
-    if [[ "$1" != "-"* ]] && [[ -n "$2" ]] && $opt_on;then
+    if [[ "$1" != "-"* ]] && [[ -n "$2" ]] && $opt_on; then
         printf "${RED_BOLD}These multiple options are not supported${NO}\n"
         exit
     else
-        if [ -n "$1" ];then
+        if [ -n "$1" ]; then
             case "$1" in
                 -*) ;;
                 config) open_config ;;
                 cmd | cli) contr_exec ;;
                 code) code_launch
                       exit;;
-                build) contr_build $2;;
+                build) contr_build $2 ;;
                 kill) contr_kill ;;
                 ps) contr_ps ;;
                 help) show_option ;;
@@ -706,7 +706,7 @@ if [ -n "$1" ]; then
             d) ROS_DISTRO=${OPTARG} ;;
             u) usb_dev=${OPTARG}
                usb=true ;;
-            b) if [ -n "$4" ];then
+            b) if [ -n "$4" ]; then
                  contr_build $4
                else
                  contr_build $2

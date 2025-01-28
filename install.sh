@@ -17,7 +17,6 @@ else
 
     mkdir -p /home/$USER/$folder_name
     mkdir -p /home/$USER/$folder_name/humble
-
     chmod +x $pwd/ros_contr
 
     if [ -n "$1" ] && [ "$1" == "test" ];then
@@ -28,7 +27,7 @@ else
       sudo mv $pwd/ros_contr /home/$USER/.local/bin/
       sudo ln -s /home/$USER/.local/bin/ros_contr /usr/local/bin/
     fi
-    
+
     mv $pwd/* /home/$USER/$folder_name/
     mv $pwd/.*[a-z] /home/$USER/$folder_name/
 

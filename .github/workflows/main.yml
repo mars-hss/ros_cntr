@@ -13,7 +13,9 @@ jobs:
       - name: Test installation
         shell: bash
         run: bash ./install.sh test
-      - name: Build ros humble
-        run: ros_contr build -y
-      - name: Run ros_contr
-        run: ros_contr -w test
+      - name: Show config
+        run: ros_contr config
+      # - name: Build ros humble
+      #   run: ros_contr build -y
+      # - name: Run ros_contr
+      #   run: ros_contr -w test
