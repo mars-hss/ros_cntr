@@ -10,10 +10,12 @@ jobs:
     steps:
       - name: Main brach
         uses: actions/checkout@main
+      - name: Move folder
+        run: mv /home/$USER/work/ros_container/ros_container /home/$USER/ && cd /home/$USER/ros_container
       - name: Test installation
         shell: bash
         run: bash ./install.sh test
       - name: Build ros humble
-        run: ros_contr -b -y
+        run: ros_contr build -y
       - name: Run ros_contr
-        run: run_contr -w test
+        run: ros_contr -w test
