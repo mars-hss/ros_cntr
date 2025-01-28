@@ -1,14 +1,17 @@
-name: Test ros-contr
+name: Test ROS Container
 on:
   push:
     branches: [ main ]
 
 jobs:
   Install_ros-contr:
-    name: Install the ros-contr
+    name: Install the ros_contr
     runs-on: ubuntu-latest
     steps:
+      - name: Main brach
+        uses: actions/checkout@main
       - name: Test installation
         shell: bash
-        uses: actions/checkout@main
         run: bash ./install.sh
+      - name: check ros_contr
+        run: ros_contr help
