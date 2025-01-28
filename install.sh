@@ -19,6 +19,7 @@ else
     mkdir -p /home/$USER/$folder_name/humble
 
     chmod +x $pwd/ros_contr
+    mkdir -p /home/$USER/.local/bin/
     sudo mv $pwd/ros_contr /home/$USER/.local/bin/
     sudo ln -s /home/$USER/.local/bin/ros_contr /usr/local/bin/
     mv $pwd/* /home/$USER/$folder_name/
