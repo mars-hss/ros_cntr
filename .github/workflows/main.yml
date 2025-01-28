@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test installation
+        shell: bash
         run: |
         pwd
         cd ros-container/
