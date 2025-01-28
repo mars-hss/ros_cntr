@@ -30,6 +30,10 @@ else
     sudo echo "source /home/$USER/$folder_name/.setup_roscontr.bash">> /home/$USER/.bashrc
     sudo echo "">> /home/$USER/.bashrc
 
+    if [ -n "$1" ] && [ "$1" == "test" ];then
+      mkdir -p /home/$USER/$folder_name/humble/test_ws/src
+    fi
+
     echo -e "${BOLD_LINE}Installation completed!${NO}"
     ros_contr help
   else
