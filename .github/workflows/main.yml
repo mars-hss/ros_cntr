@@ -10,7 +10,4 @@ jobs:
     steps:
       - name: Test installation
         shell: bash
-        run: |
-        pwd
-        cd ros-container/
-        bash ./install.sh
+        run: bash ${{ github.action_path }}/install.sh
