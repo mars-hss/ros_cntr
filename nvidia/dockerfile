@@ -41,6 +41,7 @@ RUN sudo apt install -y \
               ros-$ROS_DISTRO-hardware* \
               ros-$ROS_DISTRO-con* \
               ros-$ROS_DISTRO-cv* \
+              ros-$ROS_DISTRO-urdf* \
               ros-$ROS_DISTRO-rviz* 
 
 # Python package for ROS
