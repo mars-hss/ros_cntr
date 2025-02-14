@@ -73,7 +73,7 @@ show_option(){
     printf "  ${BOLD}-v OR version${NO}           Show version and possible container images\n"
     printf "  ${BOLD}code${NO}                    Open vscode in a container from ros_contr\n"
     printf "  ${BOLD}-d${NO} ${PURPLE}ROS_DISTRO${NO}           ROS version like noetic, humble\n"
-    printf "  ${BOLD}-u${NO} ${PURPLE}USB_device${NO}           Add usb device to container(Only first time)\n"
+    printf "  ${BOLD}-u${NO} ${PURPLE}/dev/***${NO}             Add a device(like a USB) to container(ONLY first)\n"
     printf "  ${BOLD}-w${NO} ${PURPLE}NAME${NO}                 ROS workspace without _ws like ex (ex_ws)\n\n"
 
     printf "You can change configuration such as port, name_tag, gpu and ROS_DISTRO.\n\n"
@@ -195,7 +195,12 @@ select_running_contrs(){
         echo -e "${GRAY}---------------------------------------------------------------------${NO}"
         for ((i=0;i<$size;i++))
         do
-            printf "  ${WHITE}$(($i+1))${NO}.${contr_name[$(($size-1-i))]} ${GRAY}|${NO}"
+            printf "  ${WHITE}$(($i+1))${NO}.${contr_name[$i]}"
+            if [ ${#contr_name[$i]} -gt 18 ]; then
+                printf "${GRAY} \t|${NO}"
+            else
+                printf "${GRAY} \t\t|${NO}"
+            fi
             if [ $(($i%2)) == 1 ] && [ $i != $(($size-1)) ]; then
                 printf "\n"
                 echo -e "${GRAY}---------------------------------------------------------------------${NO}"
@@ -204,12 +209,14 @@ select_running_contrs(){
         printf "\n"
         echo -e "${GRAY}---------------------------------------------------------------------${NO}"
         printf "\nSelect Container name : "
-        read name
+        read selected_num
 
-        check_type_num $name $size
+        check_type_num $selected_num $size
         index=$?
 
+
         selected_C_name=${contr_name[$index]}
+        echo "$selected_C_name"
     else
         selected_C_name=$contr_name
     fi
@@ -353,7 +360,7 @@ contr_run(){
     run_arg="--net=host"
 
     if $usb ; then
-        echo -e "${YELLOW}USB Ok${NO}"
+        echo -e "${YELLOW}USB or Device Ok${NO}"
         run_arg="--device="$usb_dev" \
                 --net=host
                 "
@@ -412,7 +419,7 @@ find_workspace(){
 
             contr_name="Contr_$distro_ws"_"$count_ws"
             contr_short_name="C_$distro_ws"_"$count_ws"
-            contr_run
+            contr_exec
         else
             sleep 0.75;
             clear;
@@ -554,13 +561,13 @@ open_config(){
 
 contr_images(){
 # Find container images from this script.
-    contr_imgs=($($contr_manager images --filter=reference='cimg_*'))
-    ros_image_num=$(( ((${#contr_imgs[@]}-6))/7 ))
-    for ((i=0;i<$ros_image_num;i++))
+    contr_imgs=($($contr_manager images --filter=reference='cimg_*' --format '{{.Repository}}'))
+    contr_img_num=${#contr_imgs[@]}
+
+    for ((i=0;i<$contr_img_num;i++))
     do
-        image_name=${contr_imgs[(((($i*7))+6))]}
-        if [[ "$image_name" == *"ros-"* ]]; then
-            ex_distro+=($(echo $image_name | cut -d'-' -f 2))
+        if [[ "${contr_imgs[$i]}" == *"ros"* ]]; then
+            ex_distro+=($(echo ${contr_imgs[$i]} | cut -d'-' -f 2))
         fi
     done
 }
@@ -646,10 +653,10 @@ version(){
     read_config
     printf "\n${GREEN}ros_contr${NO} ${BOLD}version 1.0${NO}\n"
     printf "Default ROS distribution : '${BLUE}$ROS_DISTRO${NO}'\n"
-    printf "Possible image number    : ${BOLD}$ros_image_num${NO}\n"
+    printf "Possible image number    : ${BOLD}$contr_img_num${NO}\n"
     printf "Name of images\t-|\n"
 
-    for ((i=0;i<$ros_image_num;i++))
+    for ((i=0;i<$contr_img_num;i++))
     do
         printf "\t\t |-${CYAN}${contr_imgs[$i]}${NO}\n"
     done
