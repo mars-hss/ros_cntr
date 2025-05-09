@@ -19,7 +19,7 @@ git clone https://github.com/mars-hss/ros_cntr.git
 ### Execute install script.
 #### (*sudo permission is later for asking password.)
 ```bash
-cd path-to-clone/ros_cmtr/
+cd path-to-clone/ros_cntr/
 bash ./install.sh
 ```
 
