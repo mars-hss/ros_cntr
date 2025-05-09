@@ -4,8 +4,8 @@ on:
     branches: [ main ]
 
 jobs:
-  Install_ros-contr:
-    name: Install the ros_contr
+  Install_ros-cntr:
+    name: Install the ros_cntr
     runs-on: ubuntu-latest
     steps:
       - name: Main brach
@@ -14,8 +14,8 @@ jobs:
         shell: bash
         run: bash ./install.sh test
       - name: Show config
-        run: ros_contr config show
+        run: ros_cntr config show
       # - name: Build ros humble
-      #   run: ros_contr build -y
-      # - name: Run ros_contr
-      #   run: ros_contr -w test
+      #   run: ros_cntr build -y
+      # - name: Run ros_cntr
+      #   run: ros_cntr -w test
