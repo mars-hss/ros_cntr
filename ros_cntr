@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright to Mars 
 ###########################################
-# This is launch script for ROS Container #
+#    This is launch script for ROS CNTR   #
 ###########################################
 
 ### Variables ###
@@ -15,13 +15,13 @@ USER=$(id -u -n)      # username for container and linux
 uid=$(id -u)          # user id
 ws_selected=false     # Workspace
 ws_name_tag="_ws"     # _ws for workspace
-contr_name=""         # container name
+cntr_name=""         # container name
 default_gpu="nvidia"
 gpu=""                # true : nvidia/intel/amd
 build_version=""      # container build arg
 multi_distro=false    # multi-containers for same ros version.
 multi_ws=false        # multi-containers for same ros and workspace.
-contr_manager=
+cntr_manager=
 
 
 ### Color for scirpt ###
@@ -63,15 +63,15 @@ esac
 
 
 show_option(){
-    printf "\n${LINE}${GREEN_BOLD}ros_contr${NO} ${BOLD}[OPTION]${NO} ${PURPLE}COMMAND${NO}\n\n"
+    printf "\n${LINE}${GREEN_BOLD}ros_cntr${NO} ${BOLD}[OPTION]${NO} ${PURPLE}COMMAND${NO}\n\n"
     printf "${BOLD}Options${NO}:\n"
     printf "  ${BOLD}-b OR build${NO}             Change dockerfile and build the container\n"
-    printf "  ${BOLD}-c OR config${NO}            Open configuration file for 'ros_contr'\n"
-    printf "  ${BOLD}-k OR kill${NO}              Kill running ros_contr\n"
+    printf "  ${BOLD}-c OR config${NO}            Open configuration file for 'ros_cntr'\n"
+    printf "  ${BOLD}-k OR kill${NO}              Kill running ros_cntr\n"
     printf "  ${BOLD}-r OR ps${NO}                Running containers from this script\n"
     printf "  ${BOLD}-t OR cmd OR cli${NO}        Addition terminal for containers\n"
     printf "  ${BOLD}-v OR version${NO}           Show version and possible container images\n"
-    printf "  ${BOLD}code${NO}                    Open vscode in a container from ros_contr\n"
+    printf "  ${BOLD}code${NO}                    Open vscode in a container from ros_cntr\n"
     printf "  ${BOLD}-d${NO} ${PURPLE}ROS_DISTRO${NO}           ROS version like noetic, humble\n"
     printf "  ${BOLD}-u${NO} ${PURPLE}/dev/***${NO}             Add a device(like a USB) to container(ONLY first)\n"
     printf "  ${BOLD}-w${NO} ${PURPLE}NAME${NO}                 ROS workspace without _ws like ex (ex_ws)\n\n"
@@ -85,7 +85,7 @@ show_option(){
     exit
 }
 
-contr_build_version(){
+cntr_build_version(){
 # set variables for building images
     if [ -n "$1" ]; then
         case "$1" in
@@ -94,7 +94,7 @@ contr_build_version(){
     fi
 }
 
-contr_build(){
+cntr_build(){
 # Build container images
 # Arguments
 # $1: tag name
@@ -144,14 +144,14 @@ contr_build(){
     fi
 
     if [ "$build_yn" == "y" ]; then
-        contr_build_version $tag
-        $contr_manager build -t $full_tag \
+        cntr_build_version $tag
+        $cntr_manager build -t $full_tag \
          --build-arg version=$build_version \
          --build-arg bundles=$bundles \
          --build-arg USER=$USER \
          --build-arg uid=$uid \
          -f $dockerfile $build_dir/
-        $contr_manager image prune -f
+        $cntr_manager image prune -f
         printf "\n${BLUE_LINE}Relaunch this script for using ROS Container${NO}\n"
     else
         printf "${YELLOW}Didn't build container${NO}"
@@ -183,20 +183,20 @@ check_type_num(){
     fi
 }
 
-select_running_contrs(){
+select_running_cntrs(){
 # Arguments
 # $1: selected number
 # $2: total array length
-# Set select_C_name (contr_name)
-    contr_find_name
-    size=${#contr_name[@]}
+# Set select_C_name (cntr_name)
+    cntr_find_name
+    size=${#cntr_name[@]}
 
     if [ $size -gt 1 ]; then
         echo -e "${GRAY}---------------------------------------------------------------------${NO}"
         for ((i=0;i<$size;i++))
         do
-            printf "  ${WHITE}$(($i+1))${NO}.${contr_name[$i]}"
-            if [ ${#contr_name[$i]} -gt 18 ]; then
+            printf "  ${WHITE}$(($i+1))${NO}.${cntr_name[$i]}"
+            if [ ${#cntr_name[$i]} -gt 18 ]; then
                 printf "${GRAY} \t|${NO}"
             else
                 printf "${GRAY} \t\t|${NO}"
@@ -215,78 +215,78 @@ select_running_contrs(){
         index=$?
 
 
-        selected_C_name=${contr_name[$index]}
+        selected_C_name=${cntr_name[$index]}
         echo "$selected_C_name"
     else
-        selected_C_name=$contr_name
+        selected_C_name=$cntr_name
     fi
 }
 
-contr_exec(){
+cntr_exec(){
 # Execute terminal
 # Arguments
 # $1: selected number
 # $2: total array length
     if [ -n "$2" ]; then
-        exec_name=Contr_$2
-        contr_on=$($contr_manager ps -q -f name=$exec_name)
-        if [ -z "$contr_on" ]; then
-            exec_name=Contr_$ROS_DISTRO-$1
+        exec_name=cntr_$2
+        cntr_on=$($cntr_manager ps -q -f name=$exec_name)
+        if [ -z "$cntr_on" ]; then
+            exec_name=cntr_$ROS_DISTRO-$1
         fi
     else
         if [ -n "$ws_name" ]; then
-            exec_name=$contr_name
+            exec_name=$cntr_name
         else
-            select_running_contrs
+            select_running_cntrs
             exec_name=$selected_C_name
         fi
     fi
-    contr_on=$($contr_manager ps -q -f name=$exec_name)
-    if [ -n "$contr_on" ]; then
-        contr_find_name $exec_name
+    cntr_on=$($cntr_manager ps -q -f name=$exec_name)
+    if [ -n "$cntr_on" ]; then
+        cntr_find_name $exec_name
         clear;
-        $contr_manager exec -it $contr_on bash
+        $cntr_manager exec -it $cntr_on bash
     else
         printf "${RED_BOLD}There is no running container for ROS\n${NO}"
         exit
     fi
     sleep 0.8;
-    contr_id=$($contr_manager ps -q -f name=$exec_name)
-    if [ -n "$contr_id" ]; then
-        printf "Do you want to kill '${BLUE}$contr_name${NO}'? (y/n): "
+    cntr_id=$($cntr_manager ps -q -f name=$exec_name)
+    if [ -n "$cntr_id" ]; then
+        printf "Do you want to kill '${BLUE}$cntr_name${NO}'? (y/n): "
         read build_yn
         if [ "$build_yn" == "y" ]; then
-            contr_kill $contr_name
+            cntr_kill $cntr_name
         else
-            printf "${YELLOW}Terminate '${BLUE}$contr_name${NO}${YELLOW}' terminal\n${NO}"
+            printf "${YELLOW}Terminate '${BLUE}$cntr_name${NO}${YELLOW}' terminal\n${NO}"
             exit
         fi
     else
-        printf "${YELLOW}\nTerminate '${BLUE}$contr_name${NO}${YELLOW}' terminal\n${NO}"
+        printf "${YELLOW}\nTerminate '${BLUE}$cntr_name${NO}${YELLOW}' terminal\n${NO}"
         exit
     fi
 }
 
-contr_kill(){
+cntr_kill(){
 # Kill all containers from this script.
     if [ -n "$1" ]; then
-        contr_id=$($contr_manager ps -q -f name=$1)
+        cntr_id=$($cntr_manager ps -q -f name=$1)
     else
-        contr_id=$($contr_manager ps -q -f name=Contr_*)
-        contr_find_name
+        cntr_id=$($cntr_manager ps -q -f name=cntr_*)
+        cntr_find_name
     fi
-    if [ -n "$contr_id" ]; then
-        end=($($contr_manager kill $contr_id))
-        contr_num=${#contr_name[@]}
+    if [ -n "$cntr_id" ]; then
+        end=($($cntr_manager kill $cntr_id))
+        cntr_num=${#cntr_name[@]}
 
-        if [ $contr_num -gt 1 ]; then
+        if [ $cntr_num -gt 1 ]; then
             echo -e "${YELLOW}Kill the running "
-            for ((i=0;i<$contr_num;i++))
+            for ((i=0;i<$cntr_num;i++))
             do
-                echo -e "'${NO}${BLUE}${contr_name[i]}${NO}${YELLOW}' | ID: ${end[i]}"
+                echo -e "'${NO}${BLUE}${cntr_name[i]}${NO}${YELLOW}' | ID: ${end[i]}"
             done
         else
-            echo -e "${YELLOW}Kill the running '${NO}${BLUE}$contr_name${NO}${YELLOW}' | ID: $end"
+            echo -e "${YELLOW}Kill the running '${NO}${BLUE}$cntr_name${NO}${YELLOW}' | ID: $end"
         fi
     else
         printf "${RED_BOLD}There is no running Container.\n${NO}"
@@ -294,24 +294,24 @@ contr_kill(){
     exit
 }
 
-contr_find_name(){
+cntr_find_name(){
 # Find container names from this script.
 # Arguments
-# $1: contr_name=Contr_*
+# $1: cntr_name=cntr_*
     if [ -n $1 ]; then
-        contr_name=($($contr_manager ps -f name=$1 --format '{{.Names}}'))
+        cntr_name=($($cntr_manager ps -f name=$1 --format '{{.Names}}'))
     else
-        contr_name=($($contr_manager ps -f name=Contr_* --format '{{.Names}}'))
+        cntr_name=($($cntr_manager ps -f name=cntr_* --format '{{.Names}}'))
     fi
 }
 
-contr_run(){
+cntr_run(){
 # RUN Container image with configuraitons
 # Arguments
-# $1: contr_name=Contr_*
+# $1: cntr_name=cntr_*
     if [ -n "$1" ]; then
-        contr_name=Contr_$1
-        contr_short_name=D_$1
+        cntr_name=cntr_$1
+        cntr_short_name=D_$1
         add_volume="$start_dir/$1/$1$ws_name_tag:/home/$USER/ws"
         work_DIR="/home/$USER/ws"
         run_name=cimg_$1
@@ -375,13 +375,13 @@ contr_run(){
     fi
 
     printf "${CYAN}Ready to use ROS Container${NO}\n"
-    run=$($contr_manager run -id \
+    run=$($cntr_manager run -id \
                 --rm -u $USER \
                 --privileged \
-                --name=$contr_name \
+                --name=$cntr_name \
                 --env="DISPLAY=$DISPLAY" \
                 --env="LIBGL_ALWAYS_INDIRECT=0" \
-                --env="contr_name=$contr_short_name" \
+                --env="cntr_name=$cntr_short_name" \
                 --volume=$add_volume \
                 --workdir=$work_DIR \
                 $run_arg \
@@ -389,41 +389,41 @@ contr_run(){
                 $run_name)
 
     #code launch
-    code_launch $contr_name
+    code_launch $cntr_name
     
     sleep 0.75;
-    contr_exec $contr_name
+    cntr_exec $cntr_name
 }
 
 find_workspace(){
 # find workspace from namep of ros version folder
 # tag is ws_name_tag / Default is _ws
     if $multi_distro; then
-        contr_on=
+        cntr_on=
     else
-        contr_on=$($contr_manager ps -q -f name=Contr_$ROS_DISTRO-*)
+        cntr_on=$($cntr_manager ps -q -f name=cntr_$ROS_DISTRO-*)
     fi
 
-    if [ -n "$contr_on" ]; then
+    if [ -n "$cntr_on" ]; then
         if $multi_ws; then
-            contr_on_ws=($($contr_manager ps -f name=Contr_$ROS_DISTRO-* --format '{{.Names}}'))
-            num_ws_names=${#contr_on_ws[@]}
+            cntr_on_ws=($($cntr_manager ps -f name=cntr_$ROS_DISTRO-* --format '{{.Names}}'))
+            num_ws_names=${#cntr_on_ws[@]}
 
-            if [ -n "$contr_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
-                count_ws=$(( $count_ws + "$(echo ${contr_on_ws[0]} | cut -d'_' -f 3)" ))
+            if [ -n "$cntr_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
+                count_ws=$(( $count_ws + "$(echo ${cntr_on_ws[0]} | cut -d'_' -f 3)" ))
             fi
 
-            ws_name=$(echo "$(echo ${contr_on_ws[0]} | cut -d'_' -f 2)" | cut -d'-' -f 2)
-            distro_ws=$(echo ${contr_on_ws[0]} | cut -d'_' -f 2)
+            ws_name=$(echo "$(echo ${cntr_on_ws[0]} | cut -d'_' -f 2)" | cut -d'-' -f 2)
+            distro_ws=$(echo ${cntr_on_ws[0]} | cut -d'_' -f 2)
             ros_ws=$(find $start_dir/$ROS_DISTRO/ -maxdepth 1 -type d -name "$ws_name""$ws_name_tag")
 
-            contr_name="Contr_$distro_ws"_"$count_ws"
-            contr_short_name="C_$distro_ws"_"$count_ws"
-            contr_exec
+            cntr_name="cntr_$distro_ws"_"$count_ws"
+            cntr_short_name="C_$distro_ws"_"$count_ws"
+            cntr_exec
         else
             sleep 0.75;
             clear;
-            contr_exec Contr_$ROS_DISTRO-*
+            cntr_exec cntr_$ROS_DISTRO-*
         fi
     else
         if $ws_selected; then
@@ -432,8 +432,8 @@ find_workspace(){
                 printf "${RED_BOLD}Can't find the workspace called '${NO}${ORANGE}$sws_name${NO}${RED_BOLD}' for ${NO}${BLUE}$ROS_DISTRO\n\n${NO}"
                 exit
             fi
-            contr_name="Contr_$ROS_DISTRO-$ws_name"
-            contr_short_name="C_$ROS_DISTRO-$ws_name"
+            cntr_name="cntr_$ROS_DISTRO-$ws_name"
+            cntr_short_name="C_$ROS_DISTRO-$ws_name"
         else
             # Show and select which workspace for ROS Container
             if [ -z "$(find $start_dir/$ROS_DISTRO -type d -name *$ws_name_tag)" ]; then
@@ -487,22 +487,22 @@ find_workspace(){
                 exit
             fi
             ws_name=${selected_ws%%_*}
-            contr_name="Contr_$ROS_DISTRO-$ws_name"
-            contr_short_name="C_$ROS_DISTRO-$ws_name"
+            cntr_name="cntr_$ROS_DISTRO-$ws_name"
+            cntr_short_name="C_$ROS_DISTRO-$ws_name"
             cd $current
         fi
 
         if $multi_ws; then
-            contr_on_ws=($($contr_manager ps -f name=$contr_name* --format '{{.Names}}'))
-            num_ws_names=${#contr_on_ws[@]}
+            cntr_on_ws=($($cntr_manager ps -f name=$cntr_name* --format '{{.Names}}'))
+            num_ws_names=${#cntr_on_ws[@]}
 
-            if [ -n "$contr_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
-                count_ws=$(( $count_ws + "$(echo ${contr_on_ws[0]} | cut -d'_' -f 3)" ))
+            if [ -n "$cntr_on_ws" ] && [ "$num_ws_names" -gt 0 ]; then
+                count_ws=$(( $count_ws + "$(echo ${cntr_on_ws[0]} | cut -d'_' -f 3)" ))
             fi
-            contr_name="$contr_name"_"$count_ws"
-            contr_short_name="$contr_short_name"_"$count_ws"
+            cntr_name="$cntr_name"_"$count_ws"
+            cntr_short_name="$cntr_short_name"_"$count_ws"
         fi
-        contr_run
+        cntr_run
     fi
 }
 
@@ -511,13 +511,13 @@ read_config(){
     config=$(find $start_dir/.config)
 
     if [ -z $config ]; then
-        printf "${RED_BOLD}\nCan't find the configuration file for ros_contr${NO}\n"
+        printf "${RED_BOLD}\nCan't find the configuration file for ros_cntr${NO}\n"
         exit
     fi
 
     source $start_dir/.config
 
-    check_manager=$(command -v $contr_manager)
+    check_manager=$(command -v $cntr_manager)
     if [ -z "$check_manager" ]; then
         printf "${YELLOW}There is no container manager.${NO}\n"
         printf "${RED_BOLD}Please install docker or podman.${NO}\n"
@@ -559,35 +559,35 @@ open_config(){
     exit        
 }
 
-contr_images(){
+cntr_images(){
 # Find container images from this script.
-    contr_imgs=($($contr_manager images --filter=reference='cimg_*' --format '{{.Repository}}'))
-    contr_img_num=${#contr_imgs[@]}
+    cntr_imgs=($($cntr_manager images --filter=reference='cimg_*' --format '{{.Repository}}'))
+    cntr_img_num=${#cntr_imgs[@]}
 
-    for ((i=0;i<$contr_img_num;i++))
+    for ((i=0;i<$cntr_img_num;i++))
     do
-        if [[ "${contr_imgs[$i]}" == *"ros"* ]]; then
-            ex_distro+=($(echo ${contr_imgs[$i]} | cut -d'-' -f 2))
+        if [[ "${cntr_imgs[$i]}" == *"ros"* ]]; then
+            ex_distro+=($(echo ${cntr_imgs[$i]} | cut -d'-' -f 2))
         fi
     done
 }
 
-contr_ps(){
+cntr_ps(){
 # Check running container from this script
-    running=($($contr_manager ps -f name=Contr_*))
+    running=($($cntr_manager ps -f name=cntr_*))
     ps_num=$(( ((${#running[@]}))-8 ))
 
     if [ "$ps_num" -gt 0 ]; then
-        $contr_manager ps -f name=Contr_*
+        $cntr_manager ps -f name=cntr_*
     else
-        echo -e "${RED_BOLD}There are no running containers from${NO} ${GREEN_BOLD}ros_contr${NO}"
+        echo -e "${RED_BOLD}There are no running containers from${NO} ${GREEN_BOLD}ros_cntr${NO}"
     fi
     exit
 }
 
 check_img(){
 # Check container images with ros version
-    contr_images
+    cntr_images
     distro=$(echo "$(echo $1 | cut -d'_' -f 2)" | cut -d '-' -f 1)
     distro_num=${#ex_distro[@]}
     img_ros=false
@@ -603,25 +603,25 @@ check_img(){
 code_launch(){
 # Launch VSCode from container container from this script.
 # Arguments
-# $1: contr_name=Contr_*
+# $1: cntr_name=cntr_*
 # $2: open path from the container
     en_vscode=$(command -v code)
 
    if [ -n "$en_vscode" ]; then
-        if [ "$contr_manager" == "docker" ]; then
+        if [ "$cntr_manager" == "docker" ]; then
             if [ -n "$1" ]; then
                 selected_C_name=$1
             else
-                contr_find_name
-                num_contr=${#contr_name[@]}
-                if [ "$num_contr" -gt 1 ]; then
-                    select_running_contrs
+                cntr_find_name
+                num_cntr=${#cntr_name[@]}
+                if [ "$num_cntr" -gt 1 ]; then
+                    select_running_cntrs
                 else
-                    selected_C_name=$contr_name
+                    selected_C_name=$cntr_name
                 fi
             fi
 
-            if [ -n "$($contr_manager ps -f name=$selected_C_name)" ]; then
+            if [ -n "$($cntr_manager ps -f name=$selected_C_name)" ]; then
 
                 hex=$(printf \{\"containerName\"\:\"$selected_C_name\"\} | od -A n -t x1 | tr -d '[\n\t ]')
 
@@ -649,16 +649,16 @@ code_launch(){
 }
 
 version(){
-    contr_images
+    cntr_images
     read_config
-    printf "\n${GREEN}ros_contr${NO} ${BOLD}version 1.0${NO}\n"
+    printf "\n${GREEN}ros_cntr${NO} ${BOLD}version 1.0${NO}\n"
     printf "Default ROS distribution : '${BLUE}$ROS_DISTRO${NO}'\n"
-    printf "Possible image number    : ${BOLD}$contr_img_num${NO}\n"
+    printf "Possible image number    : ${BOLD}$cntr_img_num${NO}\n"
     printf "Name of images\t-|\n"
 
-    for ((i=0;i<$contr_img_num;i++))
+    for ((i=0;i<$cntr_img_num;i++))
     do
-        printf "\t\t |-${CYAN}${contr_imgs[$i]}${NO}\n"
+        printf "\t\t |-${CYAN}${cntr_imgs[$i]}${NO}\n"
     done
     printf "\n"
     exit
@@ -684,12 +684,12 @@ script_option(){
             case "$1" in
                 -*) ;;
                 config) open_config $2 ;;
-                cmd | cli) contr_exec ;;
+                cmd | cli) cntr_exec ;;
                 code) code_launch
                       exit;;
-                build) contr_build $2 ;;
-                kill) contr_kill ;;
-                ps) contr_ps ;;
+                build) cntr_build $2 ;;
+                kill) cntr_kill ;;
+                ps) cntr_ps ;;
                 help) show_option ;;
                 version) version ;;
                 *) printf "\n${RED_BOLD}Wrong options! Please check below options${NO}\n"
@@ -719,13 +719,13 @@ if [ -n "$1" ]; then
             u) usb_dev=${OPTARG}
                usb=true ;;
             b) if [ -n "$4" ]; then
-                 contr_build $4
+                 cntr_build $4
                else
-                 contr_build $2
+                 cntr_build $2
                fi ;;
-            t) contr_exec ;;
-            k) contr_kill ;;
-            r) contr_ps ;;
+            t) cntr_exec ;;
+            k) cntr_kill ;;
+            r) cntr_ps ;;
             h) show_option ;;
             v) version ;;
             ?) printf "\n${RED_BOLD}Wrong options! Please check below options${NO}\n"

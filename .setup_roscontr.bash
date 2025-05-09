@@ -6,7 +6,7 @@ rd_options_fn(){
 
   local cmd=${1:-_EmptycmD_}
 
-  complete -W "$(printf "%s " "${rd_options[@]}")" ros_contr
+  complete -W "$(printf "%s " "${rd_options[@]}")" ros_cntr
 }
 
-complete -F rd_options_fn ros_contr
+complete -F rd_options_fn ros_cntr

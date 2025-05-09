@@ -1,4 +1,4 @@
-# ros_contr
+# ros_cntr
 Bash script for ROS with container
 
 ![ROS](https://img.shields.io/badge/ROS-22314E?style=for-the-badge&logo=ROS&logoColor=white) ![ROS 2](https://img.shields.io/badge/ROS_2-22314E?style=for-the-badge&logo=ROS&logoColor=white) with ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) or ![Podman](https://img.shields.io/badge/-Podman-892CA0?style=for-the-badge&logo=podman&logoColor=white) written in ![Shell](https://img.shields.io/badge/Shell-121011?style=for-the-badge&logo=gnu-bash&logoColor=white)
@@ -7,23 +7,23 @@ Bash script for ROS with container
 <br/>
 
 # How it looks like
-![](media/ros_contr_help.png)
-### details of configuration in [Wiki](https://github.com/mars-hss/ros_container/wiki/Configuration)
+![](media/ros_cntr_help.png)
+### details of configuration in [Wiki](https://github.com/mars-hss/ros_cntr/wiki/Configuration)
 <br/>
 
 # Getting Started
 ### Clone this repo.
 ```bash
-git clone https://github.com/mars-hss/ros_container.git
+git clone https://github.com/mars-hss/ros_cntr.git
 ```
 ### Execute install script.
 #### (*sudo permission is later for asking password.)
 ```bash
-cd path-to-clone/ros_container/
+cd path-to-clone/ros_cmtr/
 bash ./install.sh
 ```
 
-### Find out more details [Wiki](https://github.com/mars-hss/ros_container/wiki)
+### Find out more details [Wiki](https://github.com/mars-hss/ros_cntr/wiki)
 
 <br/>
 
