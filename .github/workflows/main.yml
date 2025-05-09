@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Main brach
-        uses: actions/main
+        uses: actions/latest@main
       - name: Test installation
         shell: bash
         run: bash ./install.sh test
