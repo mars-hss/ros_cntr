@@ -8,8 +8,8 @@ jobs:
     name: Install the ros_cntr
     runs-on: ubuntu-latest
     steps:
-      # - name: Main brach
-        # uses: actions/checkout@main
+      - name: Main brach
+        uses: actions/main
       - name: Test installation
         shell: bash
         run: bash ./install.sh test
