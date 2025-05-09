@@ -12,7 +12,10 @@ jobs:
         uses: actions/checkout@main
       - name: Test installation
         shell: bash
-        run: bash ./install.sh
+        run: ls
+      - name: Test installation
+        shell: bash
+        run: bash ./install.sh test
       - name: Show config
         run: ros_cntr config show
       # - name: Build ros humble
