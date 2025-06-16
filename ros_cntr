@@ -15,7 +15,7 @@ USER=$(id -u -n)      # username for container and linux
 uid=$(id -u)          # user id
 ws_selected=false     # Workspace
 ws_name_tag="_ws"     # _ws for workspace
-cntr_name=""         # container name
+cntr_name=""          # container name
 default_gpu="nvidia"
 gpu=""                # true : nvidia/intel/amd
 build_version=""      # container build arg
@@ -311,7 +311,7 @@ cntr_run(){
 # $1: cntr_name=cntr_*
     if [ -n "$1" ]; then
         cntr_name=cntr_$1
-        cntr_short_name=D_$1
+        cntr_short_name=C_$1
         add_volume="$start_dir/$1/$1$ws_name_tag:/home/$USER/ws"
         work_DIR="/home/$USER/ws"
         run_name=cimg_$1
@@ -502,7 +502,15 @@ find_workspace(){
             cntr_name="$cntr_name"_"$count_ws"
             cntr_short_name="$cntr_short_name"_"$count_ws"
         fi
-        cntr_run
+
+        if $multi_distro; then
+            cntr_on=$($cntr_manager ps -q -f name=$cntr_name)
+            if [ -n "$cntr_on" ]; then
+                cntr_exec $cntr_name
+            else
+                cntr_run
+            fi           
+        fi
     fi
 }
 
