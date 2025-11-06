@@ -145,12 +145,13 @@ cntr_build(){
 
     if [ "$build_yn" == "y" ]; then
         cntr_build_version $tag
-        $cntr_manager build -t $full_tag \
+        $cntr_manager build --tag $full_tag \
          --build-arg version=$build_version \
          --build-arg bundles=$bundles \
          --build-arg USER=$USER \
          --build-arg uid=$uid \
-         -f $dockerfile $build_dir/
+         --file $dockerfile \
+         $build_dir/
         $cntr_manager image prune -f
         printf "\n${BLUE_LINE}Relaunch this script for using ROS Container${NO}\n"
     else
